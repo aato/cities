@@ -1,0 +1,164 @@
+<!DOCTYPE>
+<html>
+<head>
+  <title>What City Am I In?</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <link rel="alternate" href="https://whatcityamiin.com" hreflang="en-ca" />
+
+  <meta name="description" content="Find the name of your current city in a snap!">
+  <meta name=viewport content="width=device-width, initial-scale=1">
+
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-82128682-1', 'auto');
+  ga('send', 'pageview');
+
+  </script>
+
+  <style>
+  #map {
+    width: 75%;
+    height: 60%;
+  }
+  #search_panel {
+    text-align: center;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <h1 class="text-center">What City Am I In?</h1>
+      <p class="text-center">We'll find the official name of your current city. You must agree to the "Share Location" prompt first.</p>
+      <div id="search_panel">
+        <form class="form-inline" id="checkAddress">
+          <div class="form-group">
+            <label for="searchAddress">Or you can manually enter an address:</label>
+            <input name="address" type="text" class="form-control" id="searchAddress" placeholder="Check your address">
+          </div>
+          <button type="submit" class="btn btn-default">What City Am I In?</button>
+        </form>
+      </div>
+      <br>
+      <br>
+
+      <div class="col-md-12">
+        <div class="center-block" id="map"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+  <script>
+  var geocoder;
+  var map;
+  var infoWindow;
+  var marker;
+  $(document).ready(function(){
+    $('#checkAddress').submit(function(e){
+      var address = $(this).serialize().split('=')[1];
+
+      geocodeLatLng(geocoder, map, infoWindow, {'address': decodeURIComponent(address)});
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      return true;
+    });
+  });
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat: -34.397, lng: 150.644},
+      zoom: 6
+    });
+    infoWindow = new google.maps.InfoWindow({map: map});
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        geocoder = new google.maps.Geocoder;
+        geocodeLatLng(geocoder, map, infoWindow, {'location': pos});
+
+        map.setCenter(pos);
+      }, function() {
+        handleLocationError(true, infoWindow, map.getCenter());
+      });
+    } else {
+      // Browser doesn't support Geolocation
+      handleLocationError(false, infoWindow, map.getCenter());
+    }
+  }
+
+  function geocodeLatLng(geocoder, map, infowindow, location) {
+    geocoder.geocode(location, function(results, status) {
+      if (status === 'OK') {
+        var cityName;
+        var latlng;
+        outer:  for(var i in results){
+          for(var j in results[i].address_components){
+            if(results[i].address_components[j].types.indexOf('locality') > -1) {
+              cityName = results[i].address_components[j].long_name;
+              latlng = {
+                lat: results[i].geometry.location.lat(),
+                lng: results[i].geometry.location.lng()
+              }
+              break outer;
+            }
+          };
+        };
+
+        if (cityName) {
+          map.setZoom(11);
+
+          marker = marker || new google.maps.Marker({
+            map: map
+          });
+
+          marker.setPosition(latlng);
+
+          infowindow.setContent('<h1>Your city is ' + cityName + '</h1>');
+          infowindow.open(map, marker);
+        } else {
+          infowindow.setPosition(map.getCenter());
+          infowindow.setContent('<h1>We couldn\'t find your city :(</h1>');
+        }
+      } else {
+        infowindow.setPosition(map.getCenter());
+        infowindow.setContent('<h1>We couldn\'t find your city :(</h1>');
+      }
+    });
+  }
+
+  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+    console.log(browserHasGeolocation);
+    infoWindow.setPosition(pos);
+    infoWindow.setContent('<h1>We couldn\'t find your city :(</h1>');
+  }
+  </script>
+  <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBi17IKWXHZ39hWj7eZ-UQRzF-YS-yPG9c&callback=initMap">
+  </script>
+
+  <br>
+  <br>
+
+  <footer class="section section-light">
+    <div class="container text-center">
+      <small class="text-muted"><a href="https://whatcityamiin.com">WhatCityAmIIn.com</a> </small>
+    </div>
+  </footer>
+</body>
+</html>
