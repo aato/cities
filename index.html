@@ -134,20 +134,13 @@
           infowindow.setContent('<h1>Your city is ' + cityName + '</h1>');
           infowindow.open(map, marker);
         } else {
-          infowindow.setPosition(map.getCenter());
-          infowindow.setContent('<p>We couldn\'t find your city :(</p>');
         }
       } else {
-        infowindow.setPosition(map.getCenter());
-        infowindow.setContent('<p>We couldn\'t find your city :(</p>');
       }
     });
   }
 
   function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    console.log(browserHasGeolocation);
-    infoWindow.setPosition(pos);
-    infoWindow.setContent('<p>We couldn\'t find your city :(</p>');
   }
   </script>
   <script async defer
